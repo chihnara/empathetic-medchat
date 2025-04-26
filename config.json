@@ -1,0 +1,19 @@
+{
+    "openai_api_key": "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",
+    "dialoggpt_save_dir": "saved_models/dialoggpt",
+    "empathy_save_dir": "saved_models/empathy",
+    "model_config": {
+        "dialoggpt": {
+            "model_name": "microsoft/DialoGPT-medium",
+            "batch_size": 4,
+            "max_length": 128
+        },
+        "empathy": {
+            "max_features": 1000,
+            "ngram_range": [
+                1,
+                2
+            ]
+        }
+    }
+}
