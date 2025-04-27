@@ -8,6 +8,7 @@ import gc
 from typing import Dict, List, Tuple
 from src.models.context_analyzer import ContextAnalyzer
 from src.models.empathy_classifier import EmpathyClassifier
+from src.models.response_generator import ResponseGenerator
 import time
 
 
@@ -33,40 +34,40 @@ def main():
             model_name="distilbert-base-uncased", device=device
         )
 
-        # Test queries and responses
-        test_cases = [
-            {
-                "query": "I've been having severe headaches and dizziness for the past week. I'm really worried about what this could be.",
-                "response": "I understand that experiencing severe headaches and dizziness can be very concerning. It's natural to feel worried about these symptoms. Let's work together to understand what might be causing them and determine the best course of action.",
-            },
-            {
-                "query": "My chronic back pain is getting worse, and I can barely sleep at night. I feel hopeless.",
-                "response": "I hear how much the worsening back pain is affecting you, especially with your sleep being disrupted. It must be incredibly frustrating and discouraging to deal with this chronic pain. Let's discuss some ways to help manage your pain and improve your sleep.",
-            },
-            {
-                "query": "I've been diagnosed with high blood pressure and diabetes. I don't know how to handle all these medications.",
-                "response": "Managing multiple conditions like high blood pressure and diabetes can feel overwhelming. I can see why keeping track of different medications might be challenging. Would you like to go through your medication schedule together to make it more manageable?",
-            },
+        # Initialize response generator
+        print("Testing response generator...")
+        response_generator = ResponseGenerator()
+
+        # Test queries
+        test_queries = [
+            "I've been having severe headaches and dizziness for the past week. I'm really worried about what this could be.",
+            "My chronic back pain is getting worse, and I can barely sleep at night. I feel hopeless.",
+            "I've been diagnosed with high blood pressure and diabetes. I don't know how to handle all these medications.",
         ]
 
         print("\nRunning test cases...")
         print("-" * 50)
 
-        for case in test_cases:
-            print(f"\nProcessing query: {case['query']}")
+        for query in test_queries:
+            print(f"\nProcessing query: {query}")
 
             # Analyze context
-            medical_context, emotional_context = context_analyzer.analyze_context(
-                case["query"]
-            )
+            medical_context, emotional_context = context_analyzer.analyze_context(query)
             print("\nContext Analysis:")
             print(f"Medical Context: {medical_context}")
             print(f"Emotional Context: {emotional_context}")
 
-            # Classify empathy
-            empathy_level, confidence = empathy_classifier.predict(case["response"])
+            # Generate response
+            context = {"medical": medical_context, "emotional": emotional_context}
+            response = response_generator.generate_response(
+                context, empathy_level="high"
+            )
+            print("\nGenerated Response:")
+            print(response)
+
+            # Classify empathy of generated response
+            empathy_level, confidence = empathy_classifier.predict(response)
             print("\nEmpathy Classification:")
-            print(f"Response: {case['response']}")
             print(f"Empathy Level: {empathy_level} (Confidence: {confidence:.2f})")
             print("-" * 50)
 
@@ -81,6 +82,7 @@ def main():
         try:
             del context_analyzer
             del empathy_classifier
+            del response_generator
             gc.collect()
             print("Cleanup complete")
         except Exception as e:
