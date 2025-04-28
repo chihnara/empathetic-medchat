@@ -75,6 +75,10 @@ class ContextAnalyzer:
                         text = entity.get("word", "").strip()
                         score = float(entity.get("score", 0.0))
 
+                        # Skip tokens that start with ## or are too short
+                        if text.startswith("##") or len(text) < 2:
+                            continue
+
                         if score > 0.3:  # Lower threshold for better recall
                             context[category].append(
                                 {"text": text, "confidence": score}
@@ -109,6 +113,16 @@ class ContextAnalyzer:
                 ("shortness of breath", "difficulty breathing"),
                 ("muscle pain", "muscle ache"),
                 ("joint pain", "joint ache"),
+                ("bloating", "abdominal bloating"),
+                ("cramps", "abdominal cramps"),
+                ("stomach pain", "abdominal pain"),
+                ("indigestion", "upset stomach"),
+                ("constipation", "bowel problems"),
+                ("diarrhea", "loose stools"),
+                ("vomiting", "throwing up"),
+                ("loss of appetite", "decreased appetite"),
+                ("weight loss", "unintended weight loss"),
+                ("weight gain", "unintended weight gain")
             ]
             
             # First check for exact matches
@@ -118,7 +132,7 @@ class ContextAnalyzer:
                         context["symptoms"].append({"text": pattern, "confidence": 0.6})
             
             # Then check for severity indicators
-            severity_indicators = ["severe", "bad", "terrible", "awful", "extreme", "intense"]
+            severity_indicators = ["severe", "bad", "terrible", "awful", "extreme", "intense", "chronic", "persistent"]
             for indicator in severity_indicators:
                 if indicator in text_lower:
                     # Find the closest symptom to the severity indicator
@@ -138,6 +152,12 @@ class ContextAnalyzer:
                 symptom for symptom in context["symptoms"]
                 if symptom["text"].lower() in text_lower or
                 any(pattern in text_lower for pattern, _ in symptom_patterns if pattern in symptom["text"].lower())
+            ]
+
+            # Clean up any remaining strange tokens
+            context["symptoms"] = [
+                symptom for symptom in context["symptoms"]
+                if not symptom["text"].startswith("##") and len(symptom["text"]) > 2
             ]
 
             return context
