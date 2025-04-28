@@ -25,7 +25,7 @@ def main():
 
         # Initialize context analyzer
         print("Testing context analyzer...")
-        context_analyzer = ContextAnalyzer(medical_model_name="src/models/medical_ner")
+        context_analyzer = ContextAnalyzer(medical_model_name="models/medical_ner")
 
         # Initialize empathy classifier
         print("Testing empathy classifier...")

@@ -9,3 +9,4 @@ tqdm>=4.65.0
 spacy>=3.0.0
 datasets>=2.0.0
 pathlib>=1.0.1
+flask>=2.0.0

@@ -60,20 +60,27 @@ This implementation attempts to reproduce the core functionality of the original
 ## Project Structure
 
 ```
-e2e/
-├── run.py                 # Main entry point for the system
-├── requirements.txt       # Project dependencies
+empathetic-medchat/
+├── app.py                # Flask web server for interactive chat
+├── run.py                # Command-line interface for testing
+├── requirements.txt      # Project dependencies
+├── templates/            # HTML templates for web interface
+│   └── index.html        # Main chat interface
 ├── src/                  # Source code directory
 │   ├── models/           # Model implementations
 │   │   ├── context_analyzer.py    # Medical and emotional context analysis
 │   │   ├── empathy_classifier.py  # Empathy level classification
+│   │   ├── response_generator.py  # Response generation
+│   │   ├── dialogue_model.py      # Dialogue management
 │   │   └── medical_ner/           # Trained medical NER model
 │   ├── training/         # Training scripts
 │   │   ├── train_ner.py           # NER model training
 │   │   ├── prepare_data.py        # Data preparation
+│   │   ├── generate_dataset.py    # Dataset generation
 │   │   └── test_model.py          # Model testing
 │   └── utils/            # Utility functions
 ├── data/                 # Training and test data
+│   └── medical_dialogues.json     # Training data
 └── results/              # Output and evaluation results
 ```
 
@@ -89,10 +96,23 @@ e2e/
 - Uses a fine-tuned DistilBERT model
 - Provides confidence scores for classifications
 
-### Training Pipeline
-- Prepares and processes medical dialogue data
-- Trains the NER model for medical entity detection
-- Evaluates model performance on test data
+### Response Generator
+- Generates context-aware responses
+- Integrates medical and emotional context
+- Maintains conversation flow
+
+### Web Interface
+- Real-time chat with the medical assistant
+- Detailed analysis of each response:
+  - Medical context (symptoms, conditions, treatments)
+  - Emotional context
+  - Empathy level and confidence
+  - Conversation context
+- Basic session tracking (sessions are not persistent)
+- Reset functionality for new conversations
+- Modern, responsive design
+- Loading indicator while waiting for responses
+- Error handling and recovery
 
 ## Installation and Usage
 
@@ -100,35 +120,81 @@ e2e/
 - Python 3.8+
 - PyTorch 2.0+
 - Transformers 4.30+
+- Flask 2.0+
+- spaCy 3.0+
 - Other dependencies listed in requirements.txt
 
 ### Installation
 1. Clone the repository
-2. Install dependencies:
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv empathetic-medchat-env
+   source empathetic-medchat-env/bin/activate  # On Windows: empathetic-medchat-env\Scripts\activate
+   ```
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
+4. Install spaCy language model:
+   ```bash
+   python -m spacy download en_core_web_sm
+   ```
 
 ### Running the System
-1. Basic usage:
+
+#### Web Interface (Recommended)
+1. Start the Flask server:
+   ```bash
+   python app.py
+   ```
+2. Open your browser and navigate to:
+   ```
+   http://localhost:5000
+   ```
+3. Start chatting with the medical assistant
+
+#### Command Line Interface
+1. Run the test cases:
    ```bash
    python run.py
    ```
 
-2. Training the models:
+#### Training the Model
+1. Run the training script:
    ```bash
    python src/training/run_training.py
    ```
+   This script will:
+   - Load and prepare the medical dialogues data
+   - Split the data into training and validation sets
+   - Train the NER model
+   - Save the trained model to models/medical_ner
 
-3. Testing the models:
-   ```bash
-   python src/training/test_model.py
-   ```
+Note: The training script requires the medical dialogues data to be present in `data/medical_dialogues.json`. Make sure this file exists before running the training.
 
 ### Configuration
 - Model paths and parameters can be adjusted in the respective configuration files
-- Training parameters can be modified in the training scripts
-- Test cases can be added or modified in run.py
+- Training parameters can be modified in run_training.py
+- Web interface settings can be configured in app.py
+
+## Features
+
+### Web Interface
+- Real-time chat with the medical assistant
+- Detailed analysis of each response:
+  - Medical context (symptoms, conditions, treatments)
+  - Emotional context
+  - Empathy level and confidence
+  - Conversation context
+- Reset functionality for new conversations
+- Modern, responsive design
+- Loading indicator while waiting for responses
+- Error handling and recovery
+
+### Command Line Interface
+- Test cases with predefined scenarios
+- Detailed analysis output
+- Error handling and logging
 
 ## Future Improvements
 1. Integration of more sophisticated emotional analysis
@@ -136,7 +202,9 @@ e2e/
 3. Improved training data and evaluation metrics
 4. Real-time processing capabilities
 5. Integration with medical knowledge bases
-
+6. User authentication and history
+7. Export conversation history
+8. Mobile app interface
 
 ## Acknowledgments
 - Original MEDICOD paper authors
