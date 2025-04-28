@@ -10,84 +10,122 @@ from src.models.context_analyzer import ContextAnalyzer
 from src.models.empathy_classifier import EmpathyClassifier
 from src.models.response_generator import ResponseGenerator
 import time
+import logging
+import sys
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__name__)
+
+
+def print_separator(message=""):
+    """Print a separator line with optional message."""
+    width = 80
+    if message:
+        message = f" {message} "
+        padding = (width - len(message)) // 2
+        print("\n" + "=" * padding + message + "=" * padding)
+    else:
+        print("\n" + "=" * width)
 
 
 def main():
-    # Set device and clear memory
-    device = "cpu"  # Force CPU to avoid memory issues
-    torch.cuda.empty_cache() if torch.cuda.is_available() else None
-    gc.collect()
+    """Main function to run the MEDICOD system."""
+    print_separator("Initializing MEDICOD System")
 
-    print(f"Device set to use {device}")
+    # Set device
+    device = "cpu"
+    print(f"\nDevice: {device.upper()}")
+
+    print("\nInitializing components...")
 
     try:
-        # Initialize components with minimal models
-        print("Initializing components...")
-
         # Initialize context analyzer
         print("Testing context analyzer...")
-        context_analyzer = ContextAnalyzer(medical_model_name="src/models/medical_ner")
+        context_analyzer = ContextAnalyzer()
+        logger.info("Context analyzer initialized successfully")
 
         # Initialize empathy classifier
         print("Testing empathy classifier...")
-        empathy_classifier = EmpathyClassifier(
-            model_name="distilbert-base-uncased", device=device
-        )
+        empathy_classifier = EmpathyClassifier()
+        logger.info("Empathy classifier initialized successfully")
 
         # Initialize response generator
         print("Testing response generator...")
         response_generator = ResponseGenerator()
+        logger.info("Response generator initialized successfully")
 
         # Test queries
         test_queries = [
-            "I've been having severe headaches and dizziness for the past week. I'm really worried about what this could be.",
-            "My chronic back pain is getting worse, and I can barely sleep at night. I feel hopeless.",
-            "I've been diagnosed with high blood pressure and diabetes. I don't know how to handle all these medications.",
+            {
+                "query": "I've been having severe headaches and feeling dizzy lately. It's really affecting my daily life.",
+                "expected_symptoms": ["severe headaches", "dizziness"],
+                "expected_emotions": ["worried", "distressed"],
+            },
+            {
+                "query": "My chronic back pain is getting worse and I'm feeling hopeless about finding relief.",
+                "expected_symptoms": ["chronic back pain"],
+                "expected_emotions": ["hopeless", "depressed"],
+            },
+            {
+                "query": "I'm concerned about my high blood pressure and diabetes. The medications don't seem to be helping.",
+                "expected_symptoms": ["high blood pressure", "diabetes"],
+                "expected_emotions": ["concerned", "anxious"],
+            },
         ]
 
-        print("\nRunning test cases...")
-        print("-" * 50)
-
-        for query in test_queries:
-            print(f"\nProcessing query: {query}")
+        print("\nProcessing test queries...")
+        for query_data in test_queries:
+            query = query_data["query"]
+            print(f"\nQuery: {query}")
 
             # Analyze context
+            print("\nAnalyzing context...")
             medical_context, emotional_context = context_analyzer.analyze_context(query)
-            print("\nContext Analysis:")
-            print(f"Medical Context: {medical_context}")
-            print(f"Emotional Context: {emotional_context}")
+            print(f"Medical context: {medical_context}")
+            print(f"Emotional context: {emotional_context}")
 
-            # Generate response
-            context = {"medical": medical_context, "emotional": emotional_context}
-            response = response_generator.generate_response(
-                context, empathy_level="high"
+            # Generate responses with different empathy levels and find the best one
+            print("\nGenerating best response...")
+            best_response = None
+            best_confidence = 0.0
+            best_level = None
+
+            for empathy_level in ["high", "medium", "low"]:
+                response = response_generator.generate_response(
+                    query, medical_context, emotional_context, empathy_level
+                )
+                predicted_level, confidence = empathy_classifier.predict(response)
+
+                if confidence > best_confidence:
+                    best_response = response
+                    best_confidence = confidence
+                    best_level = predicted_level
+
+            print(
+                f"\nBest response ({best_level} empathy, confidence: {best_confidence:.2f}):"
             )
-            print("\nGenerated Response:")
-            print(response)
-
-            # Classify empathy of generated response
-            empathy_level, confidence = empathy_classifier.predict(response)
-            print("\nEmpathy Classification:")
-            print(f"Empathy Level: {empathy_level} (Confidence: {confidence:.2f})")
-            print("-" * 50)
+            print(best_response)
 
     except Exception as e:
-        print(f"Error occurred: {str(e)}")
-        import traceback
+        logger.error(f"\nError occurred: {str(e)}")
+        raise
 
-        traceback.print_exc()
     finally:
-        # Clean up
-        print("\nCleaning up...")
+        print_separator("Cleaning Up")
         try:
-            del context_analyzer
-            del empathy_classifier
-            del response_generator
-            gc.collect()
-            print("Cleanup complete")
+            if "empathy_classifier" in locals():
+                del empathy_classifier
+            if "context_analyzer" in locals():
+                del context_analyzer
+            if "response_generator" in locals():
+                del response_generator
         except Exception as e:
-            print(f"Cleanup error: {str(e)}")
-        print("-" * 50)
+            logger.error(f"Cleanup error: {str(e)}")
 
 
 if __name__ == "__main__":

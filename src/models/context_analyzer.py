@@ -6,6 +6,10 @@ from typing import Dict, List, Tuple
 import torch
 from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 from functools import lru_cache
+import logging
+import re
+
+logger = logging.getLogger(__name__)
 
 
 class ContextAnalyzer:
@@ -36,6 +40,78 @@ class ContextAnalyzer:
             "TREATMENT": "treatments",
             "DRUG": "medications",
         }
+
+        try:
+            # Initialize sentiment analysis pipeline with better model
+            self.sentiment_analyzer = pipeline(
+                "sentiment-analysis",
+                model="finiteautomata/bertweet-base-sentiment-analysis",
+                return_all_scores=True,
+            )
+
+            # Emotion keywords for better detection
+            self.emotion_keywords = {
+                "positive": [
+                    "better",
+                    "improved",
+                    "relieved",
+                    "grateful",
+                    "thankful",
+                    "hopeful",
+                    "optimistic",
+                ],
+                "negative": [
+                    "worried",
+                    "anxious",
+                    "scared",
+                    "fear",
+                    "pain",
+                    "hurt",
+                    "suffering",
+                    "hopeless",
+                    "overwhelmed",
+                    "frustrated",
+                    "depressed",
+                    "stressed",
+                    "terrified",
+                    "desperate",
+                ],
+                "neutral": [
+                    "curious",
+                    "wondering",
+                    "thinking",
+                    "considering",
+                    "planning",
+                ],
+            }
+
+            # Common symptom patterns and their variations
+            self.symptom_patterns = {
+                r"back\s+pain": "back pain",
+                r"headache(s)?": "headache",
+                r"dizziness": "dizziness",
+                r"nausea": "nausea",
+                r"fatigue": "fatigue",
+                r"fever": "fever",
+                r"cough": "cough",
+                r"shortness\s+of\s+breath": "shortness of breath",
+                r"chest\s+pain": "chest pain",
+                r"joint\s+pain": "joint pain",
+                r"muscle\s+pain": "muscle pain",
+                r"stomach\s+pain": "stomach pain",
+                r"abdominal\s+pain": "abdominal pain",
+                r"high\s+blood\s+pressure": "high blood pressure",
+                r"low\s+blood\s+pressure": "low blood pressure",
+                r"diabetes": "diabetes",
+                r"insomnia": "insomnia",
+                r"anxiety": "anxiety",
+                r"depression": "depression",
+            }
+
+            logger.info("Context analyzer initialized successfully")
+        except Exception as e:
+            logger.error(f"Error initializing context analyzer: {str(e)}")
+            raise
 
     @lru_cache(maxsize=100)
     def analyze_context(self, text: str) -> Tuple[Dict, Dict]:
@@ -177,28 +253,44 @@ class ContextAnalyzer:
 
     def _process_emotional_context(self, text: str) -> Dict:
         """Process emotional context from text."""
-        # Simple emotional analysis based on keywords
-        emotional_keywords = {
-            "positive": ["good", "better", "improve", "help", "relief"],
-            "negative": ["pain", "hurt", "worse", "bad", "uncomfortable"],
-            "concern": ["worry", "concern", "anxious", "nervous"],
-            "gratitude": ["thank", "appreciate", "grateful"],
-        }
+        try:
+            # Get sentiment scores
+            sentiment_results = self.sentiment_analyzer(text)
 
-        context = {"sentiment": "neutral", "emotions": [], "confidence": 0.0}
+            # Extract emotions from text
+            detected_emotions = []
+            text_lower = text.lower()
 
-        text_lower = text.lower()
-        detected_emotions = []
+            # Check for emotion keywords
+            for emotion_type, keywords in self.emotion_keywords.items():
+                for keyword in keywords:
+                    if keyword in text_lower:
+                        detected_emotions.append(emotion_type)
 
-        for emotion, keywords in emotional_keywords.items():
-            if any(keyword in text_lower for keyword in keywords):
-                detected_emotions.append(emotion)
+            # Determine dominant sentiment
+            sentiment_scores = sentiment_results[0]
+            max_score = max(sentiment_scores, key=lambda x: x["score"])
+            sentiment = max_score["label"].lower()
 
-        if detected_emotions:
-            context["emotions"] = detected_emotions
-            context["confidence"] = 0.7  # High confidence for keyword-based detection
-            context["sentiment"] = (
-                "positive" if "positive" in detected_emotions else "negative"
-            )
+            # If we found emotion keywords, use them to adjust sentiment
+            if detected_emotions:
+                if "negative" in detected_emotions:
+                    sentiment = "negative"
+                elif "positive" in detected_emotions:
+                    sentiment = "positive"
 
-        return context
+            # Calculate confidence based on both sentiment and emotion detection
+            confidence = max_score["score"]
+            if detected_emotions:
+                confidence = max(
+                    confidence, 0.7
+                )  # Boost confidence if emotions detected
+
+            return {
+                "sentiment": sentiment,
+                "emotions": list(set(detected_emotions)),  # Remove duplicates
+                "confidence": confidence,
+            }
+        except Exception as e:
+            logger.error(f"Error analyzing emotional context: {str(e)}")
+            return {"sentiment": "neutral", "emotions": [], "confidence": 0.0}
