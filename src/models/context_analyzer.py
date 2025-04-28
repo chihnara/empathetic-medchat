@@ -13,7 +13,7 @@ class ContextAnalyzer:
 
     def __init__(
         self,
-        medical_model_name: str = "src/models/medical_ner",
+        medical_model_name: str = "models/medical_ner",
     ):
         """Initialize the context analyzer with medical NER model."""
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -89,6 +89,57 @@ class ContextAnalyzer:
             # Post-process entities
             self._post_process_entities(context)
 
+            # Additional processing for common medical terms
+            text_lower = text.lower()
+            
+            # Check for common symptom patterns
+            symptom_patterns = [
+                ("headache", "head pain"),
+                ("cold", "common cold"),
+                ("fever", "high temperature"),
+                ("cough", "coughing"),
+                ("sore throat", "throat pain"),
+                ("runny nose", "nasal congestion"),
+                ("nausea", "feeling sick"),
+                ("dizziness", "lightheaded"),
+                ("fatigue", "tiredness"),
+                ("insomnia", "trouble sleeping"),
+                ("back pain", "backache"),
+                ("chest pain", "chest discomfort"),
+                ("shortness of breath", "difficulty breathing"),
+                ("muscle pain", "muscle ache"),
+                ("joint pain", "joint ache"),
+            ]
+            
+            # First check for exact matches
+            for pattern, alternative in symptom_patterns:
+                if pattern in text_lower or alternative in text_lower:
+                    if not any(pattern in item["text"].lower() for item in context["symptoms"]):
+                        context["symptoms"].append({"text": pattern, "confidence": 0.6})
+            
+            # Then check for severity indicators
+            severity_indicators = ["severe", "bad", "terrible", "awful", "extreme", "intense"]
+            for indicator in severity_indicators:
+                if indicator in text_lower:
+                    # Find the closest symptom to the severity indicator
+                    words = text_lower.split()
+                    for i, word in enumerate(words):
+                        if word == indicator and i + 1 < len(words):
+                            next_word = words[i + 1]
+                            # Only add severity if we find a matching symptom pattern
+                            for pattern, _ in symptom_patterns:
+                                if next_word in pattern:
+                                    if not any(pattern in item["text"].lower() for item in context["symptoms"]):
+                                        context["symptoms"].append({"text": f"{indicator} {pattern}", "confidence": 0.7})
+                                    break
+
+            # Remove any symptoms that were incorrectly inferred
+            context["symptoms"] = [
+                symptom for symptom in context["symptoms"]
+                if symptom["text"].lower() in text_lower or
+                any(pattern in text_lower for pattern, _ in symptom_patterns if pattern in symptom["text"].lower())
+            ]
+
             return context
 
         except Exception as e:
@@ -105,61 +156,44 @@ class ContextAnalyzer:
         """Post-process entities to improve accuracy."""
         # Common symptoms keywords
         symptom_keywords = [
-            "pain",
-            "ache",
-            "discomfort",
-            "headache",
-            "dizziness",
-            "nausea",
-            "fatigue",
-            "fever",
-            "cough",
-            "sore",
-            "swelling",
-            "rash",
+            "pain", "ache", "discomfort", "headache", "dizziness", "nausea",
+            "fatigue", "fever", "cough", "sore", "swelling", "rash",
+            "cold", "flu", "sneeze", "runny nose", "congestion", "sore throat",
+            "muscle ache", "joint pain", "back pain", "chest pain",
+            "shortness of breath", "difficulty breathing", "wheezing",
+            "insomnia", "sleep problems", "trouble sleeping",
+            "loss of appetite", "nausea", "vomiting", "diarrhea",
+            "constipation", "bloating", "abdominal pain"
         ]
 
         # Common conditions keywords
         condition_keywords = [
-            "diabetes",
-            "hypertension",
-            "pressure",
-            "chronic",
-            "asthma",
-            "arthritis",
-            "depression",
-            "anxiety",
-            "infection",
-            "injury",
+            "diabetes", "hypertension", "high blood pressure", "low blood pressure",
+            "asthma", "arthritis", "depression", "anxiety", "infection",
+            "injury", "cold", "flu", "pneumonia", "bronchitis", "sinusitis",
+            "migraine", "allergy", "allergic", "chronic", "acute",
+            "respiratory", "cardiovascular", "gastrointestinal", "neurological"
         ]
 
         # Common treatments keywords
         treatment_keywords = [
-            "medication",
-            "treatment",
-            "therapy",
-            "surgery",
-            "exercise",
-            "diet",
-            "rest",
-            "rehabilitation",
-            "physical therapy",
+            "medication", "treatment", "therapy", "surgery", "exercise",
+            "diet", "rest", "rehabilitation", "physical therapy",
+            "prescription", "over-the-counter", "OTC", "antibiotics",
+            "pain relievers", "anti-inflammatory", "antihistamines",
+            "decongestants", "cough medicine", "sleep aids"
         ]
 
         # Common medication keywords
         medication_keywords = [
-            "aspirin",
-            "ibuprofen",
-            "paracetamol",
-            "antibiotic",
-            "insulin",
-            "antidepressant",
-            "antihistamine",
-            "steroid",
-            "painkiller",
+            "aspirin", "ibuprofen", "paracetamol", "acetaminophen",
+            "antibiotic", "insulin", "antidepressant", "antihistamine",
+            "steroid", "painkiller", "tylenol", "advil", "motrin",
+            "benadryl", "claritin", "zyrtec", "sudafed", "nyquil",
+            "dayquil", "robitussin", "mucinex"
         ]
 
-        # Check text for common keywords
+        # Process the text for each category
         for category, keywords in [
             ("symptoms", symptom_keywords),
             ("conditions", condition_keywords),
@@ -167,13 +201,21 @@ class ContextAnalyzer:
             ("medications", medication_keywords),
         ]:
             existing_texts = {item["text"].lower() for item in context[category]}
-
-            for keyword in keywords:
+            
+            # Check for multi-word phrases first
+            for keyword in sorted(keywords, key=len, reverse=True):
                 if keyword in existing_texts:
                     continue
-
-                if keyword in " ".join(existing_texts).lower():
+                
+                # Check if the keyword is in the text
+                if keyword.lower() in " ".join(existing_texts).lower():
                     context[category].append({"text": keyword, "confidence": 0.5})
+                # Check for partial matches
+                elif any(keyword.lower() in text.lower() for text in existing_texts):
+                    context[category].append({"text": keyword, "confidence": 0.4})
+                # Check for word boundaries
+                elif any(keyword.lower() in f" {text.lower()} " for text in existing_texts):
+                    context[category].append({"text": keyword, "confidence": 0.3})
 
     def _process_emotional_context(self, text: str) -> Dict:
         """Process emotional context from text."""
