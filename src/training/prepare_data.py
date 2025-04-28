@@ -5,8 +5,6 @@ Script to prepare training data for medical NER model.
 import json
 from typing import Dict, List, Tuple
 import spacy
-from spacy.tokens import Doc
-from spacy.training import Example
 import random
 
 

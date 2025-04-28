@@ -4,10 +4,9 @@ Context analysis for medical dialogue.
 
 from typing import Dict, List, Tuple
 import torch
-from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
+from transformers import pipeline
 from functools import lru_cache
 import logging
-import re
 
 logger = logging.getLogger(__name__)
 

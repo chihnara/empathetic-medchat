@@ -2,14 +2,9 @@
 End-to-end testing of MEDICOD implementation.
 """
 
-import os
-import torch
-import gc
-from typing import Dict, List, Tuple
 from src.models.context_analyzer import ContextAnalyzer
 from src.models.empathy_classifier import EmpathyClassifier
 from src.models.response_generator import ResponseGenerator
-import time
 import logging
 import sys
 

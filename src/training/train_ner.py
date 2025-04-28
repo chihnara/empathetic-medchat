@@ -2,9 +2,7 @@
 Training script for medical NER model.
 """
 
-import os
-import torch
-from typing import Dict, List, Tuple
+from typing import Dict, List
 from transformers import (
     AutoTokenizer,
     AutoModelForTokenClassification,
@@ -15,7 +13,6 @@ from transformers import (
 from datasets import Dataset
 import numpy as np
 from sklearn.metrics import classification_report
-import json
 
 
 class MedicalNERDataset:

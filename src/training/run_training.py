@@ -2,7 +2,6 @@
 Script to run training for medical NER model.
 """
 
-import os
 import json
 from src.training.train_ner import train_medical_ner
 

@@ -2,7 +2,7 @@
 Empathy classification for medical dialogue using rule-based approach.
 """
 
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 import re
 import logging
 
