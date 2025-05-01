@@ -120,60 +120,118 @@ def generate_response(
     # Extract key information
     symptoms = [item["text"] for item in medical_context["symptoms"]]
     conditions = [item["text"] for item in medical_context["conditions"]]
+    treatments = [item["text"] for item in medical_context["treatments"]]
+    medications = [item["text"] for item in medical_context["medications"]]
     emotions = emotional_context["emotions"]
 
-    # Base response templates
-    templates = {
-        "high": [
-            "I understand how challenging this must be for you. {symptom_acknowledgment} Let's work together to find the best way to help you manage this.",
-            "I hear the difficulty you're experiencing with {symptoms}. It's completely natural to feel {emotions} about this. Would you like to discuss some ways to help manage these symptoms?",
-            "I can see how {symptoms} is affecting you, and I want you to know that I'm here to help. Let's explore some options together to improve your situation.",
-        ],
-        "medium": [
-            "I understand that {symptoms} can be concerning. Let's discuss what might be causing this and how we can help.",
-            "Thank you for sharing about your {symptoms}. I'd like to understand more about how this is affecting you.",
-            "I hear you're dealing with {symptoms}. Would you like to talk about some ways to manage this?",
-        ],
-        "low": [
-            "I see you're experiencing {symptoms}. What would you like to know about this?",
-            "Regarding your {symptoms}, could you tell me more about when this started?",
-            "I understand you have {symptoms}. Let's discuss this further.",
-        ],
+    # Medical knowledge base (simplified for example)
+    medical_knowledge = {
+        "fever": {
+            "follow_up": "How long have you had the fever? Have you taken your temperature?",
+            "advice": "It's important to stay hydrated and rest. If your fever persists for more than 3 days or is above 103°F, please seek medical attention.",
+            "related": ["chills", "fatigue", "headache"],
+        },
+        "headache": {
+            "follow_up": "Where is the pain located? Is it throbbing or constant?",
+            "advice": "Try resting in a quiet, dark room. Over-the-counter pain relievers may help, but consult a doctor if the pain is severe or persistent.",
+            "related": ["migraine", "tension", "sinus"],
+        },
+        "cough": {
+            "follow_up": "Is the cough dry or productive? How long has it been going on?",
+            "advice": "Stay hydrated and consider using a humidifier. If the cough persists for more than 2 weeks or is accompanied by difficulty breathing, seek medical attention.",
+            "related": ["cold", "flu", "allergies"],
+        },
     }
 
     # Determine empathy level based on context
-    if emotions and "negative" in emotions:
+    if emotions and any(e in ["anxiety", "fear", "pain", "distress"] for e in emotions):
         empathy_level = "high"
-    elif "severe" in " ".join(symptoms).lower():
+    elif "severe" in " ".join(symptoms).lower() or any(
+        s in ["pain", "emergency", "urgent"] for s in symptoms
+    ):
         empathy_level = "high"
     elif not symptoms and not conditions:
         empathy_level = "low"
     elif conversation_state.history and len(conversation_state.history) > 2:
         # Increase empathy for persistent issues
         empathy_level = "high"
+    elif any(e in ["sad", "worried", "concerned"] for e in emotions):
+        empathy_level = "medium"
 
-    # Randomly select a template from the appropriate level
-    template = random.choice(templates[empathy_level])
-
-    # Format response
-    symptom_text = ", ".join(symptoms) if symptoms else "your symptoms"
-    emotion_text = ", ".join(emotions) if emotions else "concerned"
-
-    # Add more context to the response
+    # Check if we need to ask for more information
     if not symptoms and not conditions:
-        template = "I understand you're not feeling well. Could you tell me more about your symptoms so I can better help you?"
-    elif "severe" in " ".join(symptoms).lower():
-        template = "I understand you're experiencing severe symptoms. This must be very difficult for you. Let's discuss this in detail to find the best way to help."
+        return "I understand you're not feeling well. Could you tell me more about your symptoms so I can better help you?"
 
-    response = template.format(
-        symptoms=symptom_text,
-        emotions=emotion_text,
-        symptom_acknowledgment=(
-            f"I can see how {symptom_text} is affecting you"
-            if symptoms
-            else "I understand your situation"
-        ),
-    )
+    # Build response based on context
+    response_parts = []
+
+    # 1. Empathetic acknowledgment
+    if empathy_level == "high":
+        response_parts.append(
+            f"I understand how difficult this must be for you. I can see you're experiencing {', '.join(symptoms)}."
+        )
+    elif empathy_level == "medium":
+        response_parts.append(f"I hear you're dealing with {', '.join(symptoms)}.")
+    else:
+        response_parts.append(f"I see you're experiencing {', '.join(symptoms)}.")
+
+    # 2. Emotional validation
+    if emotions:
+        emotion_text = ", ".join(emotions)
+        if "negative" in emotions:
+            response_parts.append(
+                f"It's completely understandable to feel {emotion_text} in this situation."
+            )
+        else:
+            response_parts.append(f"I notice you're feeling {emotion_text}.")
+
+    # 3. Medical context and advice
+    for symptom in symptoms:
+        if symptom.lower() in medical_knowledge:
+            knowledge = medical_knowledge[symptom.lower()]
+            if not any(
+                q in conversation_state.history
+                for q in knowledge["follow_up"].split("?")
+            ):
+                response_parts.append(knowledge["follow_up"])
+            else:
+                response_parts.append(knowledge["advice"])
+
+    # 4. Follow-up questions based on medical knowledge
+    if symptoms and not any("?" in part for part in response_parts):
+        primary_symptom = symptoms[0].lower()
+        if primary_symptom in medical_knowledge:
+            response_parts.append(medical_knowledge[primary_symptom]["follow_up"])
+
+    # 5. Treatment context
+    if treatments:
+        response_parts.append(
+            f"I see you're currently using {', '.join(treatments)}. How has that been working for you?"
+        )
+
+    # 6. Medication context
+    if medications:
+        response_parts.append(
+            f"You mentioned taking {', '.join(medications)}. Have you noticed any side effects?"
+        )
+
+    # 7. Conversation continuity
+    if conversation_state.history:
+        last_user_message = conversation_state.history[-1]["user"]
+        if "?" in last_user_message and not any("?" in part for part in response_parts):
+            response_parts.append(
+                "Is there anything specific you'd like to know more about?"
+            )
+
+    # Combine response parts
+    response = " ".join(response_parts)
+
+    # Ensure response ends with a question if it's a new topic
+    if (
+        not any("?" in part for part in response_parts)
+        and len(conversation_state.history) < 2
+    ):
+        response += " Could you tell me more about how this started?"
 
     return response
 
