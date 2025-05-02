@@ -1,24 +1,32 @@
 # Empathetic Medical Chat Assistant
 
-An AI-powered medical chat assistant that combines medical knowledge with empathetic responses.
+An AI-powered medical chat assistant that provides empathetic responses while analyzing medical and emotional context. The system is implemented in two versions (v1 and v2), each with different capabilities and approaches.
 
-## Features
+## Overview
 
-### V1 (Original Implementation)
-- Basic medical context analysis
+This project implements an empathetic medical chat assistant that:
+- Analyzes medical symptoms and conditions
+- Detects emotional context in user messages
+- Provides empathetic responses based on both medical and emotional context
+- Maintains conversation history and context
+- Offers real-time analysis of the conversation
+
+## Versions
+
+### Version 1 (v1)
+The base implementation focuses on:
+- Basic medical context analysis using biomedical NER
+- Simple emotion classification (positive, negative, neutral)
 - Three-level empathy classification (low, medium, high)
-- Simple response generation
 - Basic conversation state management
-- Medical knowledge base integration
 
-### V2 (Enhanced Implementation)
-- Fine-grained emotion detection with 8 emotional states
+### Version 2 (v2)
+Enhanced implementation with:
+- Fine-grained emotion detection (distress, anxiety, concern, etc.)
 - Enhanced empathy classification with confidence scoring
-- Improved response paraphrasing with modern templates
+- Improved medical term validation
+- Advanced response paraphrasing
 - Comprehensive medical knowledge base integration
-- Medical term validation against standard databases
-- Enhanced conversation context tracking
-- Improved UI with context summary display
 
 ## Installation
 
@@ -28,16 +36,15 @@ git clone https://github.com/yourusername/empathetic-medchat.git
 cd empathetic-medchat
 ```
 
-2. Create a virtual environment:
+2. Create and activate a virtual environment:
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python -m venv empathetic-medchat-env
+source empathetic-medchat-env/bin/activate  # On Windows: .\empathetic-medchat-env\Scripts\activate
 ```
 
 3. Install dependencies:
 ```bash
 pip install -r requirements.txt
-python -m spacy download en_core_web_sm
 ```
 
 ## Usage
@@ -48,66 +55,26 @@ python app.py
 ```
 
 2. Access the interfaces:
-- V1 (Original): http://localhost:5000/v1
-- V2 (Enhanced): http://localhost:5000/v2
+- V1 Interface: http://localhost:5000/v1
+- V2 Interface: http://localhost:5000/v2 (default)
 
-## API Endpoints
+## Features
 
-### V1 Endpoints
-
-- `POST /v1/chat`
-  - Input: `{"message": "user message", "session_id": "optional_session_id"}`
-  - Output: Basic response with medical and emotional context
-
-- `POST /v1/reset`
-  - Input: `{"session_id": "optional_session_id"}`
-  - Output: Resets conversation state
-
-### V2 Endpoints
-
-- `POST /v2/chat`
-  - Input: `{"message": "user message", "session_id": "optional_session_id"}`
-  - Output: Enhanced response with detailed context and confidence scores
-
-- `POST /v2/reset`
-  - Input: `{"session_id": "optional_session_id"}`
-  - Output: Resets enhanced conversation state
-
-## Enhanced Features (V2)
-
-### 1. Fine-grained Emotion Detection
-- Expanded emotion categories:
-  - Affirmative
-  - Empathy
-  - Apology
-  - Concern
-  - Encouragement
-  - Reassurance
-  - Acknowledgment
-  - None
-
-### 2. Enhanced Empathy Classification
-- Multi-level classification with confidence scoring
-- Context-aware empathy adjustment
-- Improved emotional response templates
-
-### 3. Medical Knowledge Integration
-- Comprehensive medical term validation
-- Integration with standard medical databases
-- Related conditions and symptoms lookup
-- Treatment and medication validation
-
-### 4. Improved Response Generation
-- Context-aware response templates
-- Enhanced paraphrasing capabilities
-- Medical accuracy validation
-- Empathy-level appropriate responses
-
-### 5. Enhanced UI Features
-- Real-time context summary display
-- Confidence score visualization
-- Medical term validation indicators
+### Common Features (v1 & v2)
+- Real-time medical context analysis
+- Emotional context detection
+- Empathetic response generation
 - Conversation history tracking
+- Context-aware responses
+- Interactive web interface
+
+### V2-Specific Enhancements
+- More granular emotion detection
+- Better confidence scoring for detected emotions
+- Enhanced medical term validation
+- Improved response paraphrasing
+- Integration with medical knowledge base
+- More detailed analysis display
 
 ## Project Structure
 
@@ -116,43 +83,96 @@ empathetic-medchat/
 ├── src/
 │   ├── models/
 │   │   ├── v1/
-│   │   │   ├── context_analyzer.py
-│   │   │   └── empathy_classifier.py
+│   │   │   ├── context_analyzer.py     # V1 medical & emotional context analysis
+│   │   │   └── empathy_classifier.py   # V1 empathy classification
 │   │   └── v2/
-│   │       ├── enhanced_empathy_classifier.py
-│   │       ├── enhanced_paraphraser.py
-│   │       └── medical_knowledge_base.py
-│   └── routes/
-│       ├── v1_routes.py
-│       └── v2_routes.py
+│   │       ├── enhanced_empathy_classifier.py   # V2 enhanced emotion analysis
+│   │       ├── enhanced_paraphraser.py         # V2 response paraphrasing
+│   │       └── medical_knowledge_base.py       # V2 medical term validation
+│   ├── routes/
+│   │   ├── v1_routes.py   # V1 API endpoints
+│   │   └── v2_routes.py   # V2 API endpoints
+│   └── utils/
+│       └── conversation_state.py   # Shared conversation management
 ├── templates/
-│   ├── index.html
-│   └── chat_v2.html
-├── data/
-│   └── medical/
-│       ├── conditions.json
-│       ├── symptoms.json
-│       ├── treatments.json
-│       └── medications.json
-├── app.py
-├── requirements.txt
-└── README.md
+│   ├── common/
+│   │   └── base.html      # Base template
+│   ├── v1/
+│   │   └── chat.html      # V1 interface
+│   └── v2/
+│       └── chat.html      # V2 interface
+├── app.py                 # Main application
+├── requirements.txt       # Dependencies
+└── README.md             # This file
 ```
+
+## API Endpoints
+
+### V1 Endpoints
+- `GET /v1/` - V1 chat interface
+- `POST /v1/chat` - Process messages in V1
+- `POST /v1/reset` - Reset V1 conversation
+
+### V2 Endpoints
+- `GET /v2/` - V2 chat interface
+- `POST /v2/chat` - Process messages in V2
+- `POST /v2/reset` - Reset V2 conversation
+
+## Response Format
+
+Both versions return responses in the following format:
+```json
+{
+    "response": "Assistant's response text",
+    "medical_context": {
+        "symptoms": [{"text": "symptom", "confidence": 0.9}],
+        "conditions": [{"text": "condition", "confidence": 0.8}],
+        "treatments": [{"text": "treatment", "confidence": 0.7}],
+        "medications": [{"text": "medication", "confidence": 0.9}]
+    },
+    "emotional_context": {
+        "emotions": ["emotion1", "emotion2"],
+        "empathy_level": "high/medium/low",
+        "confidence": 0.85
+    },
+    "conversation_context": "Summary of current context"
+}
+```
+
+## Development
+
+The project uses:
+- Flask for the web server
+- Transformers (Hugging Face) for NLP tasks
+- TailwindCSS for styling
+- Vanilla JavaScript for frontend interactions
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+3. Make your changes
+4. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+[Your License Here]
 
 ## Acknowledgments
 
-- Based on the MEDICOD paper implementation
-- Uses Hugging Face Transformers
-- Medical knowledge from standard medical databases 
+- [MEDCOD paper](https://arxiv.org/abs/2111.09381) (Compton et al., 2021) - *MEDCOD: A Medically-Accurate, Emotive, Diverse, and Controllable Dialog System*
+- Hugging Face Transformers library
+- Biomedical NER models
+
+## Citation
+
+If you use this project, please cite the MEDCOD paper that inspired it:
+
+```bibtex
+@article{compton2021medcod,
+  title={MEDCOD: A Medically-Accurate, Emotive, Diverse, and Controllable Dialog System},
+  author={Compton, Rhys and Valmianski, Ilya and Deng, Li and Huang, Costa and Katariya, Namit and Amatriain, Xavier and Kannan, Anitha},
+  journal={arXiv preprint arXiv:2111.09381},
+  year={2021}
+}
+``` 
