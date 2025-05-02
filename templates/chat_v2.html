@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Chat Assistant v1</title>
+    <title>Medical Chat Assistant v2</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         .chat-container {
@@ -79,8 +79,8 @@
     <div class="container mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow-lg p-6">
             <h1 class="text-2xl font-bold text-center mb-6">
-                Medical Chat Assistant v1
-                <a href="/v2" class="text-sm text-blue-400 hover:text-blue-500 ml-2">(Try v2)</a>
+                Medical Chat Assistant v2
+                <a href="/" class="text-sm text-blue-400 hover:text-blue-500 ml-2">(Try v1)</a>
             </h1>
 
             <div class="chat-container overflow-y-auto mb-4" id="chatContainer">
@@ -141,9 +141,8 @@
 
             // Format emotional context with null checks
             const emotions = analysis.emotional_context?.emotions?.join(', ') || 'None';
-            const emotionalConfidence = ((analysis.emotional_context?.confidence || 0.5) * 100).toFixed(1);
-            const empathyLevel = analysis.empathy_level || 'medium';
-            const empathyConfidence = ((analysis.empathy_confidence || 0.5) * 100).toFixed(1);
+            const emotionalConfidence = ((analysis.emotional_context?.confidence || 0) * 100).toFixed(1);
+            const empathyLevel = analysis.emotional_context?.empathy_level || 'medium';
 
             analysisDiv.innerHTML = `
                 <div class="text-gray-600">
@@ -158,11 +157,11 @@
                     <div class="mt-2">
                         <strong class="text-green-600">Emotional Context:</strong><br>
                         ${emotions !== 'None' ? `Emotions: ${emotions}<br>` : 'No emotions detected<br>'}
-                        ${emotionalConfidence > 0 ? `Confidence: ${emotionalConfidence}%` : ''}
+                        Confidence: ${emotionalConfidence}%
                     </div>
                     <div class="mt-2">
                         <strong class="text-purple-600">Response Analysis:</strong><br>
-                        Empathy Level: ${empathyLevel} (${empathyConfidence}% confidence)
+                        Empathy Level: ${empathyLevel} (${emotionalConfidence}% confidence)
                     </div>
                     <div class="mt-2">
                         <strong class="text-orange-600">Conversation Context:</strong><br>
@@ -196,7 +195,7 @@
             showTypingIndicator();
 
             try {
-                const response = await fetch('/v1/chat', {
+                const response = await fetch('/v2/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -227,7 +226,7 @@
 
         async function resetChat() {
             try {
-                await fetch('/v1/reset', {
+                await fetch('/v2/reset', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
