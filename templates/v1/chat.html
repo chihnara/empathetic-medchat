@@ -1,0 +1,161 @@
+{% extends "common/base.html" %}
+
+{% block title %}Medical Chat Assistant v1{% endblock %}
+
+{% block header %}
+Medical Chat Assistant v1
+<a href="/v2" class="text-sm text-blue-400 hover:text-blue-500 ml-2">(Try v2)</a>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let sessionId = Math.random().toString(36).substring(7);
+
+    function addMessage(message, isUser = false) {
+        const chatContainer = document.getElementById('chatContainer');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'text-gray-800';
+        messageContent.textContent = message;
+        messageDiv.appendChild(messageContent);
+
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function addAnalysis(analysis) {
+        const chatContainer = document.getElementById('chatContainer');
+        const analysisDiv = document.createElement('div');
+        analysisDiv.className = 'analysis message assistant-message';
+
+        // Format medical context with null checks
+        const symptoms = analysis.medical_context?.symptoms?.map(s => `${s.text} (${(s.confidence * 100).toFixed(1)}%)`).join(', ') || 'None';
+        const conditions = analysis.medical_context?.conditions?.map(c => `${c.text} (${(c.confidence * 100).toFixed(1)}%)`).join(', ') || 'None';
+        const treatments = analysis.medical_context?.treatments?.map(t => `${t.text} (${(t.confidence * 100).toFixed(1)}%)`).join(', ') || 'None';
+        const medications = analysis.medical_context?.medications?.map(m => `${m.text} (${(m.confidence * 100).toFixed(1)}%)`).join(', ') || 'None';
+
+        // Format emotional context with null checks
+        const emotions = analysis.emotional_context?.emotions?.join(', ') || 'None';
+        const emotionalConfidence = ((analysis.emotional_context?.confidence || 0.5) * 100).toFixed(1);
+        const empathyLevel = analysis.empathy_level || 'medium';
+        const empathyConfidence = ((analysis.empathy_confidence || 0.5) * 100).toFixed(1);
+
+        analysisDiv.innerHTML = `
+            <div class="text-gray-600">
+                <strong>Analysis:</strong><br>
+                <div class="mt-2">
+                    <strong class="text-blue-600">Medical Context:</strong><br>
+                    ${symptoms !== 'None' ? `Symptoms: ${symptoms}<br>` : ''}
+                    ${conditions !== 'None' ? `Conditions: ${conditions}<br>` : ''}
+                    ${treatments !== 'None' ? `Treatments: ${treatments}<br>` : ''}
+                    ${medications !== 'None' ? `Medications: ${medications}<br>` : ''}
+                </div>
+                <div class="mt-2">
+                    <strong class="text-green-600">Emotional Context:</strong><br>
+                    ${emotions !== 'None' ? `Emotions: ${emotions}<br>` : 'No emotions detected<br>'}
+                    ${emotionalConfidence > 0 ? `Confidence: ${emotionalConfidence}%` : ''}
+                </div>
+                <div class="mt-2">
+                    <strong class="text-purple-600">Response Analysis:</strong><br>
+                    Empathy Level: ${empathyLevel} (${empathyConfidence}% confidence)
+                </div>
+                <div class="mt-2">
+                    <strong class="text-orange-600">Conversation Context:</strong><br>
+                    ${analysis.conversation_context || 'No conversation context yet'}
+                </div>
+            </div>
+        `;
+        chatContainer.appendChild(analysisDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+        document.getElementById('typingIndicator').style.display = 'block';
+    }
+
+    function hideTypingIndicator() {
+        document.getElementById('typingIndicator').style.display = 'none';
+    }
+
+    async function sendMessage() {
+        const userInput = document.getElementById('userInput');
+        const message = userInput.value.trim();
+
+        if (!message) return;
+
+        // Add user message
+        addMessage(message, true);
+        userInput.value = '';
+
+        // Show typing indicator
+        showTypingIndicator();
+
+        try {
+            const response = await fetch('/v1/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    session_id: sessionId
+                }),
+            });
+
+            const data = await response.json();
+
+            // Hide typing indicator
+            hideTypingIndicator();
+
+            // Add assistant message
+            addMessage(data.response);
+
+            // Add analysis
+            addAnalysis(data);
+
+        } catch (error) {
+            console.error('Error:', error);
+            hideTypingIndicator();
+            addMessage('Sorry, there was an error processing your message. Please try again.');
+        }
+    }
+
+    async function resetChat() {
+        try {
+            await fetch('/v1/reset', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    session_id: sessionId
+                }),
+            });
+
+            // Clear chat container
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = `
+                <div class="message assistant-message">
+                    <div class="text-gray-800">Hello! I'm your medical chat assistant. How can I help you today?</div>
+                </div>
+            `;
+
+            // Generate new session ID
+            sessionId = Math.random().toString(36).substring(7);
+
+        } catch (error) {
+            console.error('Error:', error);
+            addMessage('Sorry, there was an error resetting the chat. Please try again.');
+        }
+    }
+
+    // Handle Enter key
+    document.getElementById('userInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+{% endblock %}

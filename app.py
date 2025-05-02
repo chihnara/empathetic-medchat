@@ -17,7 +17,7 @@ app.register_blueprint(v2_bp)
 # Root route redirects to v2
 @app.route("/")
 def home():
-    return render_template("chat_v2.html")
+    return render_template("v2/chat.html")
 
 
 if __name__ == "__main__":

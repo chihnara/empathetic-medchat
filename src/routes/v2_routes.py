@@ -6,14 +6,14 @@ from flask import Blueprint, render_template, request, jsonify
 from src.models.v2.enhanced_empathy_classifier import EnhancedEmpathyClassifier
 from src.models.v2.enhanced_paraphraser import EnhancedParaphraser
 from src.models.v2.medical_knowledge_base import MedicalKnowledgeBase
-from src.models.context_analyzer import ContextAnalyzer
+from src.models.v1.context_analyzer import ContextAnalyzerV1
 from collections import deque
 import gc
 import torch
 
 # Initialize v2 components
 print("Initializing v2 components...")
-context_analyzer = ContextAnalyzer(medical_model_name="d4data/biomedical-ner-all")
+context_analyzer = ContextAnalyzerV1(medical_model_name="d4data/biomedical-ner-all")
 empathy_classifier = EnhancedEmpathyClassifier(
     model_name="distilbert-base-uncased", device="cpu"
 )
@@ -251,8 +251,8 @@ def analyze_medical_context(text: str) -> dict:
 
 @v2_bp.route("/")
 def home_v2():
-    """Render v2 home page."""
-    return render_template("chat_v2.html")
+    """Render v2 chat interface."""
+    return render_template("v2/chat.html")
 
 
 @v2_bp.route("/chat", methods=["POST"])

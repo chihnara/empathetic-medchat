@@ -1,5 +1,5 @@
 """
-Context analysis for medical dialogue.
+Context analysis for medical dialogue (v1).
 """
 
 from typing import Dict, List, Tuple
@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification, pipelin
 from functools import lru_cache
 
 
-class ContextAnalyzer:
+class ContextAnalyzerV1:
     """Analyzes medical and emotional context from dialogue."""
 
     def __init__(

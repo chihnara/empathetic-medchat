@@ -3,8 +3,8 @@ Original v1 routes for the medical chat interface.
 """
 
 from flask import Blueprint, render_template, request, jsonify
-from src.models.context_analyzer import ContextAnalyzer
-from src.models.empathy_classifier import EmpathyClassifier
+from src.models.v1.context_analyzer import ContextAnalyzerV1
+from src.models.v1.empathy_classifier import EmpathyClassifierV1
 import torch
 import gc
 from typing import Dict, List, Tuple
@@ -16,8 +16,8 @@ v1_bp = Blueprint("v1", __name__, url_prefix="/v1")
 
 # Initialize components
 print("Initializing v1 components...")
-context_analyzer = ContextAnalyzer(medical_model_name="d4data/biomedical-ner-all")
-empathy_classifier = EmpathyClassifier(
+context_analyzer = ContextAnalyzerV1(medical_model_name="d4data/biomedical-ner-all")
+empathy_classifier = EmpathyClassifierV1(
     model_name="distilbert-base-uncased", device="cpu"
 )
 
@@ -251,8 +251,8 @@ def generate_response(
 
 @v1_bp.route("/")
 def home_v1():
-    """Render the v1 chat interface."""
-    return render_template("index.html")
+    """Render v1 chat interface."""
+    return render_template("v1/chat.html")
 
 
 @v1_bp.route("/chat", methods=["POST"])

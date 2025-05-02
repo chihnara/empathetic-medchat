@@ -51,9 +51,19 @@ class EnhancedParaphraser:
             )
             template = random.choice(templates)
 
+            # Get symptom from context
+            symptoms = context.get("symptoms", ["your symptoms"])
+            if isinstance(symptoms, list) and symptoms:
+                symptom = symptoms[0]
+                if isinstance(symptom, dict):
+                    symptom = symptom.get("text", "your symptoms")
+            else:
+                symptom = "your symptoms"
+
             # Format response
-            symptom = context.get("symptoms", [{"text": "your symptoms"}])[0]["text"]
-            response = text.replace(symptom, "").strip()
+            response = text.replace(str(symptom), "").strip()
+            if not response:
+                response = text  # Keep original text if no replacement was made
 
             return template.format(symptom=symptom, response=response)
         except Exception as e:
