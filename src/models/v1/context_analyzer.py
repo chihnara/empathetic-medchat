@@ -1,5 +1,5 @@
 """
-Context analysis for medical dialogue.
+Context analysis for medical dialogue (v1).
 """
 
 from typing import Dict, List, Tuple
@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification, pipelin
 from functools import lru_cache
 
 
-class ContextAnalyzer:
+class ContextAnalyzerV1:
     """Analyzes medical and emotional context from dialogue."""
 
     def __init__(
@@ -95,7 +95,7 @@ class ContextAnalyzer:
 
             # Additional processing for common medical terms
             text_lower = text.lower()
-            
+
             # Check for common symptom patterns
             symptom_patterns = [
                 ("headache", "head pain"),
@@ -122,17 +122,28 @@ class ContextAnalyzer:
                 ("vomiting", "throwing up"),
                 ("loss of appetite", "decreased appetite"),
                 ("weight loss", "unintended weight loss"),
-                ("weight gain", "unintended weight gain")
+                ("weight gain", "unintended weight gain"),
             ]
-            
+
             # First check for exact matches
             for pattern, alternative in symptom_patterns:
                 if pattern in text_lower or alternative in text_lower:
-                    if not any(pattern in item["text"].lower() for item in context["symptoms"]):
+                    if not any(
+                        pattern in item["text"].lower() for item in context["symptoms"]
+                    ):
                         context["symptoms"].append({"text": pattern, "confidence": 0.6})
-            
+
             # Then check for severity indicators
-            severity_indicators = ["severe", "bad", "terrible", "awful", "extreme", "intense", "chronic", "persistent"]
+            severity_indicators = [
+                "severe",
+                "bad",
+                "terrible",
+                "awful",
+                "extreme",
+                "intense",
+                "chronic",
+                "persistent",
+            ]
             for indicator in severity_indicators:
                 if indicator in text_lower:
                     # Find the closest symptom to the severity indicator
@@ -143,20 +154,34 @@ class ContextAnalyzer:
                             # Only add severity if we find a matching symptom pattern
                             for pattern, _ in symptom_patterns:
                                 if next_word in pattern:
-                                    if not any(pattern in item["text"].lower() for item in context["symptoms"]):
-                                        context["symptoms"].append({"text": f"{indicator} {pattern}", "confidence": 0.7})
+                                    if not any(
+                                        pattern in item["text"].lower()
+                                        for item in context["symptoms"]
+                                    ):
+                                        context["symptoms"].append(
+                                            {
+                                                "text": f"{indicator} {pattern}",
+                                                "confidence": 0.7,
+                                            }
+                                        )
                                     break
 
             # Remove any symptoms that were incorrectly inferred
             context["symptoms"] = [
-                symptom for symptom in context["symptoms"]
-                if symptom["text"].lower() in text_lower or
-                any(pattern in text_lower for pattern, _ in symptom_patterns if pattern in symptom["text"].lower())
+                symptom
+                for symptom in context["symptoms"]
+                if symptom["text"].lower() in text_lower
+                or any(
+                    pattern in text_lower
+                    for pattern, _ in symptom_patterns
+                    if pattern in symptom["text"].lower()
+                )
             ]
 
             # Clean up any remaining strange tokens
             context["symptoms"] = [
-                symptom for symptom in context["symptoms"]
+                symptom
+                for symptom in context["symptoms"]
                 if not symptom["text"].startswith("##") and len(symptom["text"]) > 2
             ]
 
@@ -176,41 +201,117 @@ class ContextAnalyzer:
         """Post-process entities to improve accuracy."""
         # Common symptoms keywords
         symptom_keywords = [
-            "pain", "ache", "discomfort", "headache", "dizziness", "nausea",
-            "fatigue", "fever", "cough", "sore", "swelling", "rash",
-            "cold", "flu", "sneeze", "runny nose", "congestion", "sore throat",
-            "muscle ache", "joint pain", "back pain", "chest pain",
-            "shortness of breath", "difficulty breathing", "wheezing",
-            "insomnia", "sleep problems", "trouble sleeping",
-            "loss of appetite", "nausea", "vomiting", "diarrhea",
-            "constipation", "bloating", "abdominal pain"
+            "pain",
+            "ache",
+            "discomfort",
+            "headache",
+            "dizziness",
+            "nausea",
+            "fatigue",
+            "fever",
+            "cough",
+            "sore",
+            "swelling",
+            "rash",
+            "cold",
+            "flu",
+            "sneeze",
+            "runny nose",
+            "congestion",
+            "sore throat",
+            "muscle ache",
+            "joint pain",
+            "back pain",
+            "chest pain",
+            "shortness of breath",
+            "difficulty breathing",
+            "wheezing",
+            "insomnia",
+            "sleep problems",
+            "trouble sleeping",
+            "loss of appetite",
+            "nausea",
+            "vomiting",
+            "diarrhea",
+            "constipation",
+            "bloating",
+            "abdominal pain",
         ]
 
         # Common conditions keywords
         condition_keywords = [
-            "diabetes", "hypertension", "high blood pressure", "low blood pressure",
-            "asthma", "arthritis", "depression", "anxiety", "infection",
-            "injury", "cold", "flu", "pneumonia", "bronchitis", "sinusitis",
-            "migraine", "allergy", "allergic", "chronic", "acute",
-            "respiratory", "cardiovascular", "gastrointestinal", "neurological"
+            "diabetes",
+            "hypertension",
+            "high blood pressure",
+            "low blood pressure",
+            "asthma",
+            "arthritis",
+            "depression",
+            "anxiety",
+            "infection",
+            "injury",
+            "cold",
+            "flu",
+            "pneumonia",
+            "bronchitis",
+            "sinusitis",
+            "migraine",
+            "allergy",
+            "allergic",
+            "chronic",
+            "acute",
+            "respiratory",
+            "cardiovascular",
+            "gastrointestinal",
+            "neurological",
         ]
 
         # Common treatments keywords
         treatment_keywords = [
-            "medication", "treatment", "therapy", "surgery", "exercise",
-            "diet", "rest", "rehabilitation", "physical therapy",
-            "prescription", "over-the-counter", "OTC", "antibiotics",
-            "pain relievers", "anti-inflammatory", "antihistamines",
-            "decongestants", "cough medicine", "sleep aids"
+            "medication",
+            "treatment",
+            "therapy",
+            "surgery",
+            "exercise",
+            "diet",
+            "rest",
+            "rehabilitation",
+            "physical therapy",
+            "prescription",
+            "over-the-counter",
+            "OTC",
+            "antibiotics",
+            "pain relievers",
+            "anti-inflammatory",
+            "antihistamines",
+            "decongestants",
+            "cough medicine",
+            "sleep aids",
         ]
 
         # Common medication keywords
         medication_keywords = [
-            "aspirin", "ibuprofen", "paracetamol", "acetaminophen",
-            "antibiotic", "insulin", "antidepressant", "antihistamine",
-            "steroid", "painkiller", "tylenol", "advil", "motrin",
-            "benadryl", "claritin", "zyrtec", "sudafed", "nyquil",
-            "dayquil", "robitussin", "mucinex"
+            "aspirin",
+            "ibuprofen",
+            "paracetamol",
+            "acetaminophen",
+            "antibiotic",
+            "insulin",
+            "antidepressant",
+            "antihistamine",
+            "steroid",
+            "painkiller",
+            "tylenol",
+            "advil",
+            "motrin",
+            "benadryl",
+            "claritin",
+            "zyrtec",
+            "sudafed",
+            "nyquil",
+            "dayquil",
+            "robitussin",
+            "mucinex",
         ]
 
         # Process the text for each category
@@ -221,12 +322,12 @@ class ContextAnalyzer:
             ("medications", medication_keywords),
         ]:
             existing_texts = {item["text"].lower() for item in context[category]}
-            
+
             # Check for multi-word phrases first
             for keyword in sorted(keywords, key=len, reverse=True):
                 if keyword in existing_texts:
                     continue
-                
+
                 # Check if the keyword is in the text
                 if keyword.lower() in " ".join(existing_texts).lower():
                     context[category].append({"text": keyword, "confidence": 0.5})
@@ -234,33 +335,125 @@ class ContextAnalyzer:
                 elif any(keyword.lower() in text.lower() for text in existing_texts):
                     context[category].append({"text": keyword, "confidence": 0.4})
                 # Check for word boundaries
-                elif any(keyword.lower() in f" {text.lower()} " for text in existing_texts):
+                elif any(
+                    keyword.lower() in f" {text.lower()} " for text in existing_texts
+                ):
                     context[category].append({"text": keyword, "confidence": 0.3})
 
     def _process_emotional_context(self, text: str) -> Dict:
         """Process emotional context from text."""
         # Simple emotional analysis based on keywords
         emotional_keywords = {
-            "positive": ["good", "better", "improve", "help", "relief"],
-            "negative": ["pain", "hurt", "worse", "bad", "uncomfortable"],
-            "concern": ["worry", "concern", "anxious", "nervous"],
-            "gratitude": ["thank", "appreciate", "grateful"],
+            "positive": [
+                "good",
+                "better",
+                "improve",
+                "help",
+                "relief",
+                "improving",
+                "helped",
+                "working",
+                "effective",
+            ],
+            "negative": [
+                "pain",
+                "hurt",
+                "worse",
+                "bad",
+                "uncomfortable",
+                "severe",
+                "terrible",
+                "extreme",
+                "intense",
+                "persistent",
+                "constant",
+                "chronic",
+                "awful",
+            ],
+            "concern": [
+                "worry",
+                "concern",
+                "anxious",
+                "nervous",
+                "scared",
+                "afraid",
+                "stressed",
+                "unsure",
+                "uncertain",
+            ],
+            "gratitude": ["thank", "appreciate", "grateful", "thanks"],
         }
 
         context = {"sentiment": "neutral", "emotions": [], "confidence": 0.0}
-
         text_lower = text.lower()
-        detected_emotions = []
 
+        # First check for direct emotional keywords
+        detected_emotions = []
         for emotion, keywords in emotional_keywords.items():
             if any(keyword in text_lower for keyword in keywords):
                 detected_emotions.append(emotion)
+                context["confidence"] = 0.7
 
+        # If no direct emotions detected, check medical context
+        if not detected_emotions:
+            # Check for severity indicators with symptoms
+            severity_words = [
+                "severe",
+                "terrible",
+                "extreme",
+                "intense",
+                "persistent",
+                "constant",
+            ]
+            symptom_words = [
+                "fever",
+                "cough",
+                "headache",
+                "pain",
+                "ache",
+                "dizziness",
+                "nausea",
+                "fatigue",
+                "infection",
+                "sick",
+                "ill",
+            ]
+
+            has_severity = any(word in text_lower for word in severity_words)
+            has_symptoms = any(word in text_lower for word in symptom_words)
+
+            if has_severity and has_symptoms:
+                detected_emotions.append("negative")
+                context["confidence"] = 0.6
+            elif has_symptoms:
+                detected_emotions.append("concern")
+                context["confidence"] = 0.5
+
+            # Check for duration indicators
+            duration_words = [
+                "week",
+                "days",
+                "months",
+                "long",
+                "still",
+                "keeps",
+                "continuous",
+            ]
+            if any(word in text_lower for word in duration_words) and has_symptoms:
+                if "concern" not in detected_emotions:
+                    detected_emotions.append("concern")
+                context["confidence"] = 0.6
+
+        # Set emotions and sentiment
         if detected_emotions:
             context["emotions"] = detected_emotions
-            context["confidence"] = 0.7  # High confidence for keyword-based detection
             context["sentiment"] = (
                 "positive" if "positive" in detected_emotions else "negative"
             )
+        else:
+            # Default for medical conversations
+            context["emotions"] = ["concern"]
+            context["sentiment"] = "neutral"
+            context["confidence"] = 0.4
 
         return context

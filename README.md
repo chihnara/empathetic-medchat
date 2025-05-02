@@ -1,212 +1,178 @@
-# empathetic-medchat
+# Empathetic Medical Chat Assistant
 
-This project is an implementation of the MEDICOD (Medical Context and Empathy Detection) system, based on the research paper "MEDICOD: A Medical Context and Empathy Detection System for Medical Dialogue" (Curai Research). The implementation focuses on analyzing medical dialogues to detect both medical context and empathy levels in responses.
+An AI-powered medical chat assistant that provides empathetic responses while analyzing medical and emotional context. The system is implemented in two versions (v1 and v2), each with different capabilities and approaches.
 
-## Problem Statement
+## Overview
 
-Medical dialogues often require healthcare providers to balance two critical aspects:
-1. Accurate understanding and response to medical conditions and symptoms
-2. Appropriate emotional support and empathy in their responses
+This project implements an empathetic medical chat assistant that:
+- Analyzes medical symptoms and conditions
+- Detects emotional context in user messages
+- Provides empathetic responses based on both medical and emotional context
+- Maintains conversation history and context
+- Offers real-time analysis of the conversation
 
-The challenge lies in developing a system that can:
-- Accurately identify medical entities (symptoms, conditions, treatments) in patient queries
-- Analyze the emotional context of both patient queries and provider responses
-- Classify the level of empathy in provider responses
-- Generate appropriate responses that balance medical accuracy with empathetic communication
+## Versions
 
-## Implementation Approach
+### Version 1 (v1)
+The base implementation focuses on:
+- Basic medical context analysis using biomedical NER
+- Simple emotion classification (positive, negative, neutral)
+- Three-level empathy classification (low, medium, high)
+- Basic conversation state management
 
-This implementation attempts to reproduce the core functionality of the original MEDICOD paper while making necessary adaptations for practical deployment. The system consists of several key components:
+### Version 2 (v2)
+Enhanced implementation with:
+- Fine-grained emotion detection (distress, anxiety, concern, etc.)
+- Enhanced empathy classification with confidence scoring
+- Improved medical term validation
+- Advanced response paraphrasing
+- Comprehensive medical knowledge base integration
 
-### 1. Context Analysis
-- Medical Entity Recognition (NER) using a fine-tuned BERT model
-- Emotional context analysis using keyword-based detection
-- Integration of both medical and emotional contexts for comprehensive understanding
+## Installation
 
-### 2. Empathy Classification
-- Empathy level classification using a fine-tuned DistilBERT model
-- Three-level classification: low, medium, and high empathy
-- Confidence scoring for classification results
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/empathetic-medchat.git
+cd empathetic-medchat
+```
 
-### 3. Response Generation
-- Template-based response generation
-- Integration of medical context and empathy levels
-- Context-aware response formulation
+2. Create and activate a virtual environment:
+```bash
+python -m venv empathetic-medchat-env
+source empathetic-medchat-env/bin/activate  # On Windows: .\empathetic-medchat-env\Scripts\activate
+```
 
-## Implementation Limitations and Adaptations
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-### Limitations in Exact Reproduction
-1. **Model Size**: The original paper used larger models (e.g., BERT-large), while we use DistilBERT for efficiency
-2. **Training Data**: Limited access to the exact training data used in the paper
-3. **Computational Resources**: Original implementation used more extensive computational resources
-4. **Evaluation Metrics**: Some original evaluation metrics were not reproducible due to data limitations
+## Usage
 
-### Key Adaptations
-1. **Model Architecture**:
-   - Used DistilBERT instead of BERT for faster inference
-   - Simplified the NER pipeline for better performance
-   - Implemented caching for frequently seen texts
+1. Start the server:
+```bash
+python app.py
+```
 
-2. **Training Approach**:
-   - Used transfer learning from pre-trained models
-   - Implemented smaller batch sizes for memory efficiency
-   - Added data augmentation techniques to compensate for limited training data
+2. Access the interfaces:
+- V1 Interface: http://localhost:5000/v1
+- V2 Interface: http://localhost:5000/v2 (default)
 
-3. **Evaluation**:
-   - Focused on core metrics that could be reliably measured
-   - Added confidence scoring for better interpretability
-   - Implemented more extensive testing with diverse medical scenarios
+## Features
+
+### Common Features (v1 & v2)
+- Real-time medical context analysis
+- Emotional context detection
+- Empathetic response generation
+- Conversation history tracking
+- Context-aware responses
+- Interactive web interface
+
+### V2-Specific Enhancements
+- More granular emotion detection
+- Better confidence scoring for detected emotions
+- Enhanced medical term validation
+- Improved response paraphrasing
+- Integration with medical knowledge base
+- More detailed analysis display
 
 ## Project Structure
 
 ```
 empathetic-medchat/
-├── app.py                # Flask web server for interactive chat
-├── run.py                # Command-line interface for testing
-├── requirements.txt      # Project dependencies
-├── templates/            # HTML templates for web interface
-│   └── index.html        # Main chat interface
-├── src/                  # Source code directory
-│   ├── models/           # Model implementations
-│   │   ├── context_analyzer.py    # Medical and emotional context analysis
-│   │   ├── empathy_classifier.py  # Empathy level classification
-│   │   ├── response_generator.py  # Response generation
-│   │   ├── dialogue_model.py      # Dialogue management
-│   │   └── medical_ner/           # Trained medical NER model
-│   ├── training/         # Training scripts
-│   │   ├── train_ner.py           # NER model training
-│   │   ├── prepare_data.py        # Data preparation
-│   │   ├── generate_dataset.py    # Dataset generation
-│   │   └── test_model.py          # Model testing
-│   └── utils/            # Utility functions
-├── data/                 # Training and test data
-│   └── medical_dialogues.json     # Training data
-└── results/              # Output and evaluation results
+├── src/
+│   ├── models/
+│   │   ├── v1/
+│   │   │   ├── context_analyzer.py     # V1 medical & emotional context analysis
+│   │   │   └── empathy_classifier.py   # V1 empathy classification
+│   │   └── v2/
+│   │       ├── enhanced_empathy_classifier.py   # V2 enhanced emotion analysis
+│   │       ├── enhanced_paraphraser.py         # V2 response paraphrasing
+│   │       └── medical_knowledge_base.py       # V2 medical term validation
+│   ├── routes/
+│   │   ├── v1_routes.py   # V1 API endpoints
+│   │   └── v2_routes.py   # V2 API endpoints
+│   └── utils/
+│       └── conversation_state.py   # Shared conversation management
+├── templates/
+│   ├── common/
+│   │   └── base.html      # Base template
+│   ├── v1/
+│   │   └── chat.html      # V1 interface
+│   └── v2/
+│       └── chat.html      # V2 interface
+├── app.py                 # Main application
+├── requirements.txt       # Dependencies
+└── README.md             # This file
 ```
 
-## Key Components
+## API Endpoints
 
-### Context Analyzer
-- Analyzes medical entities in text using NER
-- Detects emotional context through keyword analysis
-- Combines medical and emotional contexts for comprehensive understanding
+### V1 Endpoints
+- `GET /v1/` - V1 chat interface
+- `POST /v1/chat` - Process messages in V1
+- `POST /v1/reset` - Reset V1 conversation
 
-### Empathy Classifier
-- Classifies responses into empathy levels
-- Uses a fine-tuned DistilBERT model
-- Provides confidence scores for classifications
+### V2 Endpoints
+- `GET /v2/` - V2 chat interface
+- `POST /v2/chat` - Process messages in V2
+- `POST /v2/reset` - Reset V2 conversation
 
-### Response Generator
-- Generates context-aware responses
-- Integrates medical and emotional context
-- Maintains conversation flow
+## Response Format
 
-### Web Interface
-- Real-time chat with the medical assistant
-- Detailed analysis of each response:
-  - Medical context (symptoms, conditions, treatments)
-  - Emotional context
-  - Empathy level and confidence
-  - Conversation context
-- Basic session tracking (sessions are not persistent)
-- Reset functionality for new conversations
-- Modern, responsive design
-- Loading indicator while waiting for responses
-- Error handling and recovery
+Both versions return responses in the following format:
+```json
+{
+    "response": "Assistant's response text",
+    "medical_context": {
+        "symptoms": [{"text": "symptom", "confidence": 0.9}],
+        "conditions": [{"text": "condition", "confidence": 0.8}],
+        "treatments": [{"text": "treatment", "confidence": 0.7}],
+        "medications": [{"text": "medication", "confidence": 0.9}]
+    },
+    "emotional_context": {
+        "emotions": ["emotion1", "emotion2"],
+        "empathy_level": "high/medium/low",
+        "confidence": 0.85
+    },
+    "conversation_context": "Summary of current context"
+}
+```
 
-## Installation and Usage
+## Development
 
-### Prerequisites
-- Python 3.8+
-- PyTorch 2.0+
-- Transformers 4.30+
-- Flask 2.0+
-- spaCy 3.0+
-- Other dependencies listed in requirements.txt
+The project uses:
+- Flask for the web server
+- Transformers (Hugging Face) for NLP tasks
+- TailwindCSS for styling
+- Vanilla JavaScript for frontend interactions
 
-### Installation
-1. Clone the repository
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv empathetic-medchat-env
-   source empathetic-medchat-env/bin/activate  # On Windows: empathetic-medchat-env\Scripts\activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Install spaCy language model:
-   ```bash
-   python -m spacy download en_core_web_sm
-   ```
+## Contributing
 
-### Running the System
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-#### Web Interface (Recommended)
-1. Start the Flask server:
-   ```bash
-   python app.py
-   ```
-2. Open your browser and navigate to:
-   ```
-   http://localhost:5000
-   ```
-3. Start chatting with the medical assistant
+## License
 
-#### Command Line Interface
-1. Run the test cases:
-   ```bash
-   python run.py
-   ```
-
-#### Training the Model
-1. Run the training script:
-   ```bash
-   python src/training/run_training.py
-   ```
-   This script will:
-   - Load and prepare the medical dialogues data
-   - Split the data into training and validation sets
-   - Train the NER model
-   - Save the trained model to models/medical_ner
-
-Note: The training script requires the medical dialogues data to be present in `data/medical_dialogues.json`. Make sure this file exists before running the training.
-
-### Configuration
-- Model paths and parameters can be adjusted in the respective configuration files
-- Training parameters can be modified in run_training.py
-- Web interface settings can be configured in app.py
-
-## Features
-
-### Web Interface
-- Real-time chat with the medical assistant
-- Detailed analysis of each response:
-  - Medical context (symptoms, conditions, treatments)
-  - Emotional context
-  - Empathy level and confidence
-  - Conversation context
-- Reset functionality for new conversations
-- Modern, responsive design
-- Loading indicator while waiting for responses
-- Error handling and recovery
-
-### Command Line Interface
-- Test cases with predefined scenarios
-- Detailed analysis output
-- Error handling and logging
-
-## Future Improvements
-1. Integration of more sophisticated emotional analysis
-2. Enhanced response generation capabilities
-3. Improved training data and evaluation metrics
-4. Real-time processing capabilities
-5. Integration with medical knowledge bases
-6. User authentication and history
-7. Export conversation history
-8. Mobile app interface
+[Your License Here]
 
 ## Acknowledgments
-- Original MEDICOD paper authors
-- Hugging Face for the Transformers library
-- Curai Research for the initial research and inspiration 
+
+- [MEDCOD paper](https://arxiv.org/abs/2111.09381) (Compton et al., 2021) - *MEDCOD: A Medically-Accurate, Emotive, Diverse, and Controllable Dialog System*
+- Hugging Face Transformers library
+- Biomedical NER models
+
+## Citation
+
+If you use this project, please cite the MEDCOD paper that inspired it:
+
+```bibtex
+@article{compton2021medcod,
+  title={MEDCOD: A Medically-Accurate, Emotive, Diverse, and Controllable Dialog System},
+  author={Compton, Rhys and Valmianski, Ilya and Deng, Li and Huang, Costa and Katariya, Namit and Amatriain, Xavier and Kannan, Anitha},
+  journal={arXiv preprint arXiv:2111.09381},
+  year={2021}
+}
+``` 

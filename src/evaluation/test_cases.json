@@ -1,0 +1,191 @@
+{
+    "test_cases": [
+        {
+            "input": "I've been feeling really tired and have a fever of 101°F for the past two days.",
+            "expected_symptoms": [
+                "fatigue",
+                "fever"
+            ],
+            "expected_emotion": "concern",
+            "category": "physical_symptoms"
+        },
+        {
+            "input": "My head has been pounding and I haven't been able to sleep properly for a week.",
+            "expected_symptoms": [
+                "headache",
+                "insomnia"
+            ],
+            "expected_emotion": "distress",
+            "category": "physical_symptoms"
+        },
+        {
+            "input": "I've been experiencing severe nausea and vomiting after meals.",
+            "expected_symptoms": [
+                "nausea",
+                "vomiting"
+            ],
+            "expected_emotion": "concern",
+            "category": "physical_symptoms"
+        },
+        {
+            "input": "I have a persistent cough and my chest feels tight when I breathe.",
+            "expected_symptoms": [
+                "cough",
+                "chest tightness",
+                "breathing difficulty"
+            ],
+            "expected_emotion": "concern",
+            "category": "physical_symptoms"
+        },
+        {
+            "input": "My joints are swollen and painful, especially in the morning.",
+            "expected_symptoms": [
+                "joint pain",
+                "swelling",
+                "morning stiffness"
+            ],
+            "expected_emotion": "concern",
+            "category": "physical_symptoms"
+        },
+        {
+            "input": "I'm really anxious about my upcoming blood test results.",
+            "expected_symptoms": [],
+            "expected_emotion": "anxiety",
+            "category": "emotional_concern"
+        },
+        {
+            "input": "I'm feeling overwhelmed and can't stop worrying about my health.",
+            "expected_symptoms": [],
+            "expected_emotion": "anxiety",
+            "category": "emotional_concern"
+        },
+        {
+            "input": "I'm scared that my symptoms might be something serious.",
+            "expected_symptoms": [],
+            "expected_emotion": "fear",
+            "category": "emotional_concern"
+        },
+        {
+            "input": "I'm feeling really down and don't have much energy lately.",
+            "expected_symptoms": [
+                "fatigue"
+            ],
+            "expected_emotion": "depression",
+            "category": "emotional_concern"
+        },
+        {
+            "input": "The pain in my chest gets worse when I breathe deeply.",
+            "expected_symptoms": [
+                "chest pain",
+                "breathing difficulty"
+            ],
+            "expected_emotion": "concern",
+            "category": "urgent_symptoms"
+        },
+        {
+            "input": "I'm having trouble speaking and my face feels numb on one side.",
+            "expected_symptoms": [
+                "speech difficulty",
+                "facial numbness"
+            ],
+            "expected_emotion": "urgent",
+            "category": "urgent_symptoms"
+        },
+        {
+            "input": "I can't stop bleeding from this cut and it's been 20 minutes.",
+            "expected_symptoms": [
+                "bleeding"
+            ],
+            "expected_emotion": "urgent",
+            "category": "urgent_symptoms"
+        },
+        {
+            "input": "My blood sugar has been high for the past few days despite taking my medication.",
+            "expected_symptoms": [
+                "hyperglycemia"
+            ],
+            "expected_emotion": "concern",
+            "category": "chronic_condition"
+        },
+        {
+            "input": "My asthma has been acting up more frequently this week.",
+            "expected_symptoms": [
+                "asthma exacerbation"
+            ],
+            "expected_emotion": "concern",
+            "category": "chronic_condition"
+        },
+        {
+            "input": "I've been experiencing side effects from my new blood pressure medication.",
+            "expected_symptoms": [
+                "medication side effects"
+            ],
+            "expected_emotion": "concern",
+            "category": "medication"
+        },
+        {
+            "input": "I forgot to take my insulin this morning and now I feel dizzy.",
+            "expected_symptoms": [
+                "dizziness",
+                "medication non-compliance"
+            ],
+            "expected_emotion": "concern",
+            "category": "medication"
+        },
+        {
+            "input": "I feel so frustrated because my chronic pain is getting worse despite the treatment.",
+            "expected_symptoms": [
+                "chronic pain",
+                "pain worsening"
+            ],
+            "expected_emotion": "frustration",
+            "category": "emotional_chronic"
+        },
+        {
+            "input": "I'm worried that I'm becoming a burden to my family because of my illness.",
+            "expected_symptoms": [],
+            "expected_emotion": "guilt",
+            "category": "emotional_concern"
+        },
+        {
+            "input": "Sometimes I feel hopeless about ever getting better.",
+            "expected_symptoms": [],
+            "expected_emotion": "hopelessness",
+            "category": "emotional_concern"
+        },
+        {
+            "input": "I'm trying to stay positive but it's hard when the symptoms keep coming back.",
+            "expected_symptoms": [],
+            "expected_emotion": "mixed",
+            "category": "emotional_concern"
+        },
+        {
+            "input": "I feel isolated because nobody understands what I'm going through with this condition.",
+            "expected_symptoms": [],
+            "expected_emotion": "loneliness",
+            "category": "emotional_concern"
+        },
+        {
+            "input": "I'm proud of myself for sticking to my treatment plan, even though it's been difficult.",
+            "expected_symptoms": [],
+            "expected_emotion": "pride",
+            "category": "emotional_positive"
+        },
+        {
+            "input": "I'm grateful for the small improvements I've noticed in my symptoms lately.",
+            "expected_symptoms": [],
+            "expected_emotion": "gratitude",
+            "category": "emotional_positive"
+        },
+        {
+            "input": "I feel anxious and my heart is racing, but I'm also having trouble breathing.",
+            "expected_symptoms": [
+                "anxiety",
+                "heart racing",
+                "breathing difficulty"
+            ],
+            "expected_emotion": "panic",
+            "category": "mixed_symptoms"
+        }
+    ]
+}
