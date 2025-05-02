@@ -11,7 +11,7 @@ Our analysis demonstrates significant improvements in system efficiency while ma
 
 ## System Performance Metrics
 
-![System Performance Comparison](visualizations/performance_comparison.png)
+![System Performance Comparison](../visualizations/performance_comparison.png)
 
 ### Key Performance Improvements
 
@@ -31,7 +31,7 @@ Our analysis demonstrates significant improvements in system efficiency while ma
 
 ## Content Quality Analysis
 
-![Content Quality Radar](visualizations/content_quality_radar.png)
+![Content Quality Radar](../visualizations/content_quality_radar.png)
 
 ### Content Quality Metrics
 
@@ -52,7 +52,7 @@ Our analysis demonstrates significant improvements in system efficiency while ma
 
 ## Performance Improvements Overview
 
-![Improvement Heatmap](visualizations/improvement_heatmap.png)
+![Improvement Heatmap](../visualizations/improvement_heatmap.png)
 
 The heatmap visualization demonstrates the percentage improvements of both V1 and V2 compared to the original MEDCOD system. Notable improvements include:
 
