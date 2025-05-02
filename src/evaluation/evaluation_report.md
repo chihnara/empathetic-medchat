@@ -189,7 +189,3 @@ The evaluation reveals significant improvements in V2 over V1:
 The evaluation demonstrates that the Empathetic Medical Chat Assistant has achieved significant improvements in its V2 implementation. The system shows strong performance across all key metrics, with particular strengths in medical accuracy and emotional quality. The improvements in V2 have resulted in a more reliable, accurate, and empathetic medical chat assistant that can effectively support patients across a wide range of medical and emotional needs.
 
 The system's ability to maintain high performance across diverse test cases while providing appropriate emotional support makes it a valuable tool for patient care. The evaluation results suggest that the system is ready for deployment in real-world medical settings, with the potential to significantly improve patient communication and support.
-
-## Additional Observations
-
-During the evaluation, it was noted that some weights of the `DistilBertForSequenceClassification` model were not initialized from the model checkpoint and were newly initialized. This suggests that further training on a downstream task may be beneficial to enhance the model's predictive capabilities and inference accuracy. The system's deployment logs indicate consistent performance with successful POST requests to both v1 and v2 endpoints, confirming the system's operational stability and readiness for real-world application. 
