@@ -10,6 +10,8 @@ This project implements an empathetic medical chat assistant that:
 - Provides empathetic responses based on both medical and emotional context
 - Maintains conversation history and context
 - Offers real-time analysis of the conversation
+- Integrates an open-source medical knowledge base (v2)
+- Supports evaluation and training scripts for research and development
 
 ## Versions
 
@@ -24,9 +26,11 @@ The base implementation focuses on:
 Enhanced implementation with:
 - Fine-grained emotion detection (distress, anxiety, concern, etc.)
 - Enhanced empathy classification with confidence scoring
-- Improved medical term validation
+- Improved medical term validation and knowledge base integration
 - Advanced response paraphrasing
 - Comprehensive medical knowledge base integration
+- More detailed analysis display
+- Improved conversation state management
 
 ## Installation
 
@@ -47,6 +51,11 @@ source empathetic-medchat-env/bin/activate  # On Windows: .\empathetic-medchat-e
 pip install -r requirements.txt
 ```
 
+> **Note:**
+> - The project uses Hugging Face Transformers, PyTorch, and other NLP libraries. See `requirements.txt` for the full list.
+> - For biomedical NER, the model files are expected in `src/models/medical_ner/`.
+> - For v2, the medical knowledge base expects data in `data/medical/` (see `src/models/v2/medical_knowledge_base.py`).
+
 ## Usage
 
 1. Start the server:
@@ -57,24 +66,31 @@ python app.py
 2. Access the interfaces:
 - V1 Interface: http://localhost:5000/v1
 - V2 Interface: http://localhost:5000/v2 (default)
+- Root (http://localhost:5000/) redirects to V2
 
 ## Features
 
 ### Common Features (v1 & v2)
-- Real-time medical context analysis
+- Real-time medical context analysis (biomedical NER)
 - Emotional context detection
 - Empathetic response generation
 - Conversation history tracking
 - Context-aware responses
-- Interactive web interface
+- Interactive web interface (Flask + TailwindCSS)
 
 ### V2-Specific Enhancements
-- More granular emotion detection
-- Better confidence scoring for detected emotions
-- Enhanced medical term validation
-- Improved response paraphrasing
-- Integration with medical knowledge base
-- More detailed analysis display
+- Fine-grained emotion detection (distress, anxiety, concern, etc.)
+- Enhanced empathy classification with confidence scoring
+- Medical term validation and normalization using an open-source knowledge base
+- Advanced response paraphrasing with LLM integration
+- Integration with a medical knowledge base (see `src/models/v2/medical_knowledge_base.py`)
+- More detailed analysis and context display
+- Improved conversation state management
+
+### Evaluation & Training
+- Evaluation scripts and test cases in `src/evaluation/`
+- Training scripts for NER and empathy models in `src/training/`
+- Configuration files in `src/config/`
 
 ## Project Structure
 
@@ -83,17 +99,21 @@ empathetic-medchat/
 ├── src/
 │   ├── models/
 │   │   ├── v1/
-│   │   │   ├── context_analyzer.py     # V1 medical & emotional context analysis
-│   │   │   └── empathy_classifier.py   # V1 empathy classification
-│   │   └── v2/
-│   │       ├── enhanced_empathy_classifier.py   # V2 enhanced emotion analysis
-│   │       ├── enhanced_paraphraser.py         # V2 response paraphrasing
-│   │       └── medical_knowledge_base.py       # V2 medical term validation
+│   │   │   ├── context_analyzer.py           # V1 medical & emotional context analysis
+│   │   │   └── empathy_classifier.py         # V1 empathy classification
+│   │   ├── v2/
+│   │   │   ├── enhanced_empathy_classifier.py   # V2 enhanced emotion analysis
+│   │   │   ├── enhanced_paraphraser.py         # V2 response paraphrasing
+│   │   │   └── medical_knowledge_base.py       # V2 medical term validation & knowledge base
+│   │   └── medical_ner/                      # Biomedical NER model files
 │   ├── routes/
 │   │   ├── v1_routes.py   # V1 API endpoints
 │   │   └── v2_routes.py   # V2 API endpoints
-│   └── utils/
-│       └── conversation_state.py   # Shared conversation management
+│   ├── utils/
+│   │   └── conversation_state.py   # Shared conversation management
+│   ├── evaluation/                 # Evaluation scripts and test cases
+│   ├── training/                   # Training scripts for models
+│   └── config/                     # Configuration files
 ├── templates/
 │   ├── common/
 │   │   └── base.html      # Base template
@@ -101,9 +121,14 @@ empathetic-medchat/
 │   │   └── chat.html      # V1 interface
 │   └── v2/
 │       └── chat.html      # V2 interface
+├── data/
+│   ├── medical/           # Medical knowledge base data (JSON files)
+│   └── medical_dialogues.json  # Example dialogue data
+├── docs/                  # Architecture diagrams, reports, and presentations
 ├── app.py                 # Main application
 ├── requirements.txt       # Dependencies
-└── README.md             # This file
+├── README.md              # This file
+└── ...
 ```
 
 ## API Endpoints
@@ -118,6 +143,8 @@ empathetic-medchat/
 - `POST /v2/chat` - Process messages in V2
 - `POST /v2/reset` - Reset V2 conversation
 
+> **Note:** All endpoints are implemented as Flask blueprints in `src/routes/`.
+
 ## Response Format
 
 Both versions return responses in the following format:
@@ -128,7 +155,8 @@ Both versions return responses in the following format:
         "symptoms": [{"text": "symptom", "confidence": 0.9}],
         "conditions": [{"text": "condition", "confidence": 0.8}],
         "treatments": [{"text": "treatment", "confidence": 0.7}],
-        "medications": [{"text": "medication", "confidence": 0.9}]
+        "medications": [{"text": "medication", "confidence": 0.9}],
+        "confidence": 0.85
     },
     "emotional_context": {
         "emotions": ["emotion1", "emotion2"],
@@ -144,8 +172,15 @@ Both versions return responses in the following format:
 The project uses:
 - Flask for the web server
 - Transformers (Hugging Face) for NLP tasks
+- PyTorch for model inference
 - TailwindCSS for styling
 - Vanilla JavaScript for frontend interactions
+- NLTK, spaCy, scikit-learn, pandas for NLP utilities
+
+### Training & Evaluation
+- Training scripts for NER and empathy models: `src/training/`
+- Evaluation scripts and test cases: `src/evaluation/`
+- Test cases: `src/evaluation/test_cases.json`
 
 ## Contributing
 
